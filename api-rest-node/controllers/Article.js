@@ -47,12 +47,16 @@ const create = (req, res) => {
 
 const get = (req, res) => {
   try {
-    const query = Article.find({}).exec((error, articles) => {
-      if (error) {
-        return res.status(500).json({ message: "Error saving the article" });
-      }
-      return res.status(201).send({ articles });
-    });
+    const { lasts = 1 } = req.params.lasts;
+    const query = Article.find({})
+      .sort({ date: -1 })
+      .limit(lasts)
+      .exec((error, articles) => {
+        if (error) {
+          return res.status(500).json({ message: "Error saving the article" });
+        }
+        return res.status(201).send({ articles });
+      });
   } catch (error) {
     console.error("Error getting the articles: ", error);
   }
