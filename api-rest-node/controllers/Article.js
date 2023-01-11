@@ -1,4 +1,4 @@
-const validator = require("validator");
+const { validateArticle } = require("../helper/validator");
 const Article = require("../models/Article");
 
 const testing = (req, res) => {
@@ -9,15 +9,10 @@ const create = (req, res) => {
   try {
     //Take params from the body.
     const params = req.body;
-    const { title = "", content = "" } = params;
 
-    //Validate data.
-    const titleCorrect =
-      !validator.isEmpty(title) &&
-      validator.isLength(title, { min: 5, max: 25 });
-    const contentCorrect = !validator.isEmpty(content || "");
-    if (!titleCorrect || !contentCorrect) {
-      return res.status(400).json({ message: "Invalid input data." });
+    const articleIsValid = validateArticle(params);
+    if (articleIsValid == false) {
+      return res.status(401).json({ message: "Invalid data." });
     }
 
     //Create the object to be saved.
@@ -108,20 +103,11 @@ const edit = (req, res) => {
   try {
     const id = req.params.id;
     const params = req.body;
-    const { title = "", content = "" } = params;
-
-    //Validate data.
-    const titleCorrect =
-      !validator.isEmpty(title) &&
-      validator.isLength(title, { min: 5, max: 25 });
-    const contentCorrect = !validator.isEmpty(content || "");
-    if (!titleCorrect || !contentCorrect) {
-      return res.status(400).json({ message: "Invalid input data." });
+    const articleIsValid = validateArticle(params);
+    if (articleIsValid == false) {
+      return res.status(401).json({ message: "Invalid data." });
     }
 
-    //Create the object to be saved.
-    //Assign value to object based on the model
-    const article = new Article(params);
     Article.findOneAndUpdate({ _id: id }, params, (error, updatedArticle) => {
       if (error) {
         message = "Error editing the article.";
