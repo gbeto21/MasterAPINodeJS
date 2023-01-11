@@ -45,7 +45,7 @@ const create = (req, res) => {
   }
 };
 
-const get = (req, res) => {
+const getArticles = (req, res) => {
   try {
     const { lasts = 1 } = req.params.lasts;
     const query = Article.find({})
@@ -53,7 +53,9 @@ const get = (req, res) => {
       .limit(lasts)
       .exec((error, articles) => {
         if (error) {
-          return res.status(500).json({ message: "Error saving the article" });
+          const message = "Error getting the articles";
+          console.error(message, error);
+          return res.status(500).json({ message });
         }
         return res.status(201).send({ articles });
       });
@@ -62,8 +64,25 @@ const get = (req, res) => {
   }
 };
 
+const getArticle = (req, res) => {
+  try {
+    const id = req.params.id;
+    Article.findById(id, (error, article) => {
+      if (error) {
+        const message = "Error getting the articles";
+        console.error(message, error);
+        return res.status(500).json({ message });
+      }
+      return res.status(201).send({ article });
+    });
+  } catch (error) {
+    console.error("Error getting the article: ", error);
+  }
+};
+
 module.exports = {
   testing,
   create,
-  get,
+  getArticles,
+  getArticle,
 };
