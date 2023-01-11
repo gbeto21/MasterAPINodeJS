@@ -9,7 +9,6 @@ const create = (req, res) => {
   try {
     //Take params from the body.
     const params = req.body;
-    console.log("🤼‍♀️ Params: ", params);
     const { title = "", content = "" } = params;
 
     //Validate data.
@@ -32,7 +31,9 @@ const create = (req, res) => {
       }
 
       //Return result
-      return res.status(201).json({ message: "Article saved" });
+      return res
+        .status(201)
+        .json({ message: "Article saved", article: articleSaved });
     });
   } catch (error) {
     console.error("Error saving the article.");
@@ -44,7 +45,21 @@ const create = (req, res) => {
   }
 };
 
+const get = (req, res) => {
+  try {
+    const query = Article.find({}).exec((error, articles) => {
+      if (error) {
+        return res.status(500).json({ message: "Error saving the article" });
+      }
+      return res.status(201).send({ articles });
+    });
+  } catch (error) {
+    console.error("Error getting the articles: ", error);
+  }
+};
+
 module.exports = {
   testing,
   create,
+  get,
 };
