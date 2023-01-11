@@ -10,6 +10,10 @@ app.use(cors())
 
 app.use(express.json())
 
+app.get("/", (req, res)=>{
+  return res.status(200).json({message: "Ok"})
+})
+
 app.listen(PORT, ()=>{
   console.log(`Server listening at port: ${PORT}`);
   connection()
