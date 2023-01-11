@@ -102,3 +102,7 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Images folder
+./api-rest-node/images/articles
+api-rest-node/images/

@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { validateArticle } = require("../helper/validator");
 const Article = require("../models/Article");
 
@@ -124,11 +126,79 @@ const edit = (req, res) => {
   }
 };
 
+const upload = (req, res) => {
+  let message;
+  try {
+    const { file } = req;
+    if (!file) {
+      return res.status(401).json({ message: "Invalid data." });
+    }
+    let fileName = file.originalname;
+    let fileExtension = fileName.split(".")[1];
+    if (
+      fileExtension != "png" &&
+      fileExtension != "jpg" &&
+      fileExtension != "jpeg" &&
+      fileExtension != "gif"
+    ) {
+      fs.unlink(file.path, (error) => {
+        message = "Invalid file format";
+        return res.status(400).json({
+          message,
+        });
+      });
+    } else {
+      let id = req.params.id;
+      Article.findOneAndUpdate(
+        { _id: id },
+        { image: file.filename },
+        { new: true },
+        (error, updatedArticle) => {
+          if (error) {
+            message = "Error updating the file article.";
+            console.error(message, error);
+            return res.status(500).json({ message });
+          }
+          message = "Article edited successfully.";
+          return res.status(203).send({ message, updatedArticle });
+        }
+      );
+    }
+  } catch (error) {
+    message = "General error uploading the file.";
+    console.error(message, error);
+    return res.status(500).json({ message });
+  }
+};
+
+const getImage = (req, res) => {
+  let message;
+  try {
+    const file = req.params.file;
+    const pathFile = `./images/articles/${file}`;
+
+    fs.stat(pathFile, (error, exist) => {
+      if (exist) {
+        return res.sendFile(path.resolve(pathFile));
+      } else {
+        message = "Image not founded.";
+        return res.status(404).json({ message });
+      }
+    });
+  } catch (error) {
+    message = "General error getting the image.";
+    console.error(message, error);
+    return res.status(500).json({ message });
+  }
+};
+
 module.exports = {
   testing,
   create,
   getArticles,
   getArticle,
+  getImage,
   deleteArticle,
   edit,
+  upload,
 };
