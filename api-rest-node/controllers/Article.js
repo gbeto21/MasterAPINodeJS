@@ -103,10 +103,46 @@ const deleteArticle = (req, res) => {
   }
 };
 
+const edit = (req, res) => {
+  let message;
+  try {
+    const id = req.params.id;
+    const params = req.body;
+    const { title = "", content = "" } = params;
+
+    //Validate data.
+    const titleCorrect =
+      !validator.isEmpty(title) &&
+      validator.isLength(title, { min: 5, max: 25 });
+    const contentCorrect = !validator.isEmpty(content || "");
+    if (!titleCorrect || !contentCorrect) {
+      return res.status(400).json({ message: "Invalid input data." });
+    }
+
+    //Create the object to be saved.
+    //Assign value to object based on the model
+    const article = new Article(params);
+    Article.findOneAndUpdate({ _id: id }, params, (error, updatedArticle) => {
+      if (error) {
+        message = "Error editing the article.";
+        console.error(message, error);
+        return res.status(500).json({ message });
+      }
+      message = "Article edited successfully.";
+      return res.status(203).send({ message });
+    });
+  } catch (error) {
+    message = "General error deleting the article.";
+    console.error(message, error);
+    return res.status(500).json({ message });
+  }
+};
+
 module.exports = {
   testing,
   create,
   getArticles,
   getArticle,
   deleteArticle,
+  edit,
 };
