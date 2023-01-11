@@ -40,7 +40,6 @@ const create = (req, res) => {
     console.error(error);
     return res.status(500).json({
       message: "General error creating the article",
-      article: articleSaved,
     });
   }
 };
@@ -60,7 +59,9 @@ const getArticles = (req, res) => {
         return res.status(201).send({ articles });
       });
   } catch (error) {
-    console.error("Error getting the articles: ", error);
+    const message = "General error getting the articles.";
+    console.error(message, error);
+    return res.status(500).json({ message });
   }
 };
 
@@ -76,7 +77,29 @@ const getArticle = (req, res) => {
       return res.status(201).send({ article });
     });
   } catch (error) {
-    console.error("Error getting the article: ", error);
+    const message = "General error getting the article.";
+    console.error(message, error);
+    return res.status(500).json({ message });
+  }
+};
+
+const deleteArticle = (req, res) => {
+  let message;
+  try {
+    const id = req.params.id;
+    Article.findOneAndDelete({ _id: id }, (error, deletedArticle) => {
+      if (error) {
+        message = "Error getting the articles.";
+        console.error(message, error);
+        return res.status(500).json({ message });
+      }
+      message = "Article deleted successfully.";
+      return res.status(203).send({ message });
+    });
+  } catch (error) {
+    message = "General error deleting the article.";
+    console.error(message, error);
+    return res.status(500).json({ message });
   }
 };
 
@@ -85,4 +108,5 @@ module.exports = {
   create,
   getArticles,
   getArticle,
+  deleteArticle,
 };
