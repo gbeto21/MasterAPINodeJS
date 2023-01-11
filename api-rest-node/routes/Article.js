@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 const ArticleController = require("../controllers/Article");
 
-router.get("/articles", ArticleController.testing);
+router.get("/", ArticleController.testing);
+router.post("/", ArticleController.create);
 
 module.exports = router;

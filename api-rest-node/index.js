@@ -10,8 +10,9 @@ const app = express();
 app.use(cors());
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); //form-urlencoded
 
-app.use("/", articleRoute);
+app.use("/articles", articleRoute);
 
 app.get("/", (req, res) => {
   return res.status(200).json({ message: "Ok" });
