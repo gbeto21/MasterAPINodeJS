@@ -1,11 +1,20 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const STRING_CONSTANTS = require("../consts/stringConsts");
+const jwt = require("../services/jwt");
 
 const create = (req, res) => {
   let message;
   try {
     const params = req.body;
-    const paramsValid = validateUserParams(params);
+    const paramsValid = validateUserProperties(
+      params,
+      STRING_CONSTANTS.NAME,
+      STRING_CONSTANTS.SURNAME,
+      STRING_CONSTANTS.NICK,
+      STRING_CONSTANTS.EMAIL,
+      STRING_CONSTANTS.PASSWORD
+    );
     if (paramsValid == false) {
       message = "Invalid user data.";
       return res.status(400).json({ message });
@@ -45,10 +54,57 @@ const create = (req, res) => {
   }
 };
 
-const validateUserParams = (params) => {
+const login = async (req, res) => {
+  let message;
+  try {
+    const params = req.body;
+    const paramsAreValid = validateUserProperties(
+      params,
+      STRING_CONSTANTS.EMAIL,
+      STRING_CONSTANTS.PASSWORD
+    );
+    if (paramsAreValid == false) {
+      message = "Invalid user data.";
+      return res.status(400).json({ message });
+    }
+
+    const { email, password } = params;
+    const userRegistered = await User.findOne({ email }).exec();
+    if (!userRegistered) {
+      message = "Invalid user data.";
+      return res.status(400).json({ message });
+    }
+
+    const passwordsMatch = bcrypt.compareSync(
+      password,
+      userRegistered.password
+    );
+    if (passwordsMatch == false) {
+      message = "Invalid user data.";
+      return res.status(400).json({ message });
+    }
+
+    const token = jwt.createToken(userRegistered);
+    return res.status(201).send({ token });
+  } catch (error) {
+    message = "General error on login.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+const validateUserProperties = (params, ...properties) => {
   let paramsAreValid = true;
+
+  properties.every((property) => {
+    const valueProperty = params[property];
+    if (!valueProperty) {
+      paramsAreValid = false;
+    }
+    return valueProperty;
+  });
 
   return paramsAreValid;
 };
 
-module.exports = { create };
+module.exports = { create, login };
