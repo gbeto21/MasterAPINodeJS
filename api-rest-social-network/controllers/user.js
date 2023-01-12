@@ -2,6 +2,7 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const STRING_CONSTANTS = require("../consts/stringConsts");
 const jwt = require("../services/jwt");
+const mongoosePagination = require("mongoose-pagination");
 
 const create = (req, res) => {
   let message;
@@ -127,4 +128,22 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { create, login, getProfile };
+const getUsers = async (req, res) => {
+  let message;
+  try {
+    const page = parseInt(req.params.page || "1");
+    const itemsPerPage = 5;
+
+    const users = await User.find().sort("_id").paginate(page, itemsPerPage);
+    console.group("🍾 users");
+    console.dir(users);
+    console.groupEnd();
+    return res.status(200).send({ page, itemsPerPage, users });
+  } catch (error) {
+    message = "General error geting the users.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+module.exports = { create, login, getProfile, getUsers };
