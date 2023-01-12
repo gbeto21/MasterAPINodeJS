@@ -192,6 +192,34 @@ const getImage = (req, res) => {
   }
 };
 
+const search = (req, res) => {
+  let message;
+  try {
+    const { query } = req.params;
+
+    Article.find({
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } },
+      ],
+    })
+      .sort({ date: -1 })
+      .exec((error, articles) => {
+        if (error) {
+          message = "Error searching the articles.";
+          console.error(message, error);
+          return res.status(500).json({ message });
+        }
+
+        return res.status(201).json({ articles });
+      });
+  } catch (error) {
+    message = "General error searching the articles.";
+    console.error(message, error);
+    return res.status(500).json({ message });
+  }
+};
+
 module.exports = {
   testing,
   create,
@@ -201,4 +229,5 @@ module.exports = {
   deleteArticle,
   edit,
   upload,
+  search,
 };

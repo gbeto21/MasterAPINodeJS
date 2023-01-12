@@ -19,6 +19,7 @@ const ArticleController = require("../controllers/Article");
 router.get("/:lasts?", ArticleController.getArticles);
 router.get("/byId/:id", ArticleController.getArticle);
 router.get("/image/:file", ArticleController.getImage);
+router.get("/search/:query", ArticleController.search);
 router.post("/", ArticleController.create);
 router.post("/upload/:id", [uploads.single("file")], ArticleController.upload);
 router.put("/:id", ArticleController.edit);
