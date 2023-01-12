@@ -107,4 +107,24 @@ const validateUserProperties = (params, ...properties) => {
   return paramsAreValid;
 };
 
-module.exports = { create, login };
+const getProfile = async (req, res) => {
+  let message;
+  try {
+    const id = req.params.id;
+    const user = await User.findById(id)
+      .select({ password: 0, role: 0 })
+      .exec();
+    if (!user) {
+      message = "No user founded getting the profile.";
+      console.error(message, error);
+      return res.status(500).send({ message });
+    }
+    return res.status(201).send({ user });
+  } catch (error) {
+    message = "General error geting the profile.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+module.exports = { create, login, getProfile };
