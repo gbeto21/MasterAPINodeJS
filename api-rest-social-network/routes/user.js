@@ -19,6 +19,7 @@ router.post("/", UserController.create);
 router.post("/login", UserController.login);
 router.get("/profile/:id", AuthMiddleware.auth, UserController.getProfile);
 router.get("/:page?", AuthMiddleware.auth, UserController.getUsers);
+router.get("/avatar/:avatar", AuthMiddleware.auth, UserController.getAvatar);
 router.put("/", AuthMiddleware.auth, UserController.update);
 router.post(
   "/avatar",

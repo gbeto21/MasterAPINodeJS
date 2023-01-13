@@ -4,6 +4,7 @@ const STRING_CONSTANTS = require("../consts/stringConsts");
 const jwt = require("../services/jwt");
 const mongoosePagination = require("mongoose-pagination");
 const fs = require("fs");
+const path = require("path");
 
 const create = async (req, res) => {
   let message;
@@ -202,4 +203,32 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-module.exports = { create, login, getProfile, getUsers, update, uploadAvatar };
+const getAvatar = (req, res) => {
+  let message;
+  try {
+    const avatarParam = req.params.avatar;
+    const avatarPath = `./uploads/avatars/${avatarParam}`;
+    fs.stat(avatarPath, (error, exists) => {
+      if (!exists) {
+        message = "No avatar founded.";
+        return res.status(400).send({ message });
+      }
+
+      return res.status(200).sendFile(path.resolve(avatarPath));
+    });
+  } catch (error) {
+    message = "General error getting the avatar.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+module.exports = {
+  create,
+  login,
+  getProfile,
+  getUsers,
+  update,
+  uploadAvatar,
+  getAvatar,
+};
