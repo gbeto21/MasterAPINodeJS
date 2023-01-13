@@ -49,11 +49,11 @@ const getFollowing = async (req, res) => {
     const page = req.params.page || "1";
 
     const itemsPerPage = 5;
-    const usersFollowing = await Follow.find({ user: userFollower })
+    const following = await Follow.find({ user: userFollower })
       .populate("user followed", "-password -role -__v")
       .paginate(page, itemsPerPage);
 
-    return res.status(201).json({ usersFollowing });
+    return res.status(201).json({ following });
   } catch (error) {
     message = "General error getting following.";
     console.error(message, error);
@@ -64,6 +64,16 @@ const getFollowing = async (req, res) => {
 const getFollowers = async (req, res) => {
   let message;
   try {
+    const userFollowed = req.params.id || req.user.id;
+    const page = req.params.page || "1";
+
+    const itemsPerPage = 5;
+    const followers = await Follow.find({ followed: userFollowed })
+      .populate("user followed", "-password -role -__v")
+      .paginate(page, itemsPerPage);
+
+    return res.status(201).json({ followers });
+
     message = "Get followers.";
     return res.status(201).json({ message });
   } catch (error) {
