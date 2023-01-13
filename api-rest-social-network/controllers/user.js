@@ -24,7 +24,7 @@ const create = async (req, res) => {
     }
 
     const { password } = params;
-    const existedUser = findUser(params);
+    const existedUser = await findUser(params);
     if (existedUser) {
       message = "User already exists.";
       return res.status(401).send({ message });
@@ -154,7 +154,9 @@ const update = async (req, res) => {
       password = await bcrypt.hash(password, 10);
     }
 
-    await User.findOneAndUpdate(user.id, newUserData, { new: true }).exec();
+    await User.findOneAndUpdate({ _id: user.id }, newUserData, {
+      new: true,
+    }).exec();
     message = "User updated.";
     return res.status(201).json({ message });
   } catch (error) {
@@ -193,7 +195,10 @@ const uploadAvatar = async (req, res) => {
       return res.status(403).send({ message });
     }
 
-    await User.findOneAndUpdate(req.user.id, { image: file.filename }).exec();
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { image: file.filename }
+    ).exec();
     message = "Avatar uploaded.";
     return res.status(201).json({ message });
   } catch (error) {
