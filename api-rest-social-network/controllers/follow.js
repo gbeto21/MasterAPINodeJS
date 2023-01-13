@@ -1,5 +1,6 @@
 const Follow = require("../models/follow");
 const User = require("../models/user");
+const mongoosePaginate = require("mongoose-pagination");
 
 const follow = async (req, res) => {
   let message;
@@ -35,10 +36,41 @@ const unfollow = async (req, res) => {
     message = "Unfollow saved.";
     return res.status(201).json({ message });
   } catch (error) {
-    message = "General error on follow.";
+    message = "General error on unfollow.";
     console.error(message, error);
     return res.status(500).send({ message });
   }
 };
 
-module.exports = { follow, unfollow };
+const getFollowing = async (req, res) => {
+  let message;
+  try {
+    const userFollower = req.params.id || req.user.id;
+    const page = req.params.page || "1";
+
+    const itemsPerPage = 5;
+    const usersFollowing = await Follow.find({ user: userFollower })
+      .populate("user followed", "-password -role -__v")
+      .paginate(page, itemsPerPage);
+
+    return res.status(201).json({ usersFollowing });
+  } catch (error) {
+    message = "General error getting following.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+const getFollowers = async (req, res) => {
+  let message;
+  try {
+    message = "Get followers.";
+    return res.status(201).json({ message });
+  } catch (error) {
+    message = "General error getting followers.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+module.exports = { follow, unfollow, getFollowing, getFollowers };
