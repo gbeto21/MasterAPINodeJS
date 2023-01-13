@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const STRING_CONSTANTS = require("../consts/stringConsts");
 const jwt = require("../services/jwt");
 const mongoosePagination = require("mongoose-pagination");
+const fs = require("fs");
 
 const create = async (req, res) => {
   let message;
@@ -169,4 +170,36 @@ const findUser = async ({ email, nick }) => {
   return userFinded;
 };
 
-module.exports = { create, login, getProfile, getUsers, update };
+const uploadAvatar = async (req, res) => {
+  let message;
+  try {
+    const { file } = req;
+    const fileAttached = file;
+    if (!fileAttached) {
+      message = "No attached image founded";
+      return res.status(401).json({ message });
+    }
+
+    const extentionImage = file.originalname.split(".")[1];
+    if (
+      extentionImage != "png" &&
+      extentionImage != "jpg" &&
+      extentionImage != "jpeg" &&
+      extentionImage != "gif"
+    ) {
+      fs.unlinkSync(file.path);
+      message = "Invalid extension.";
+      return res.status(403).send({ message });
+    }
+
+    await User.findOneAndUpdate(req.user.id, { image: file.filename }).exec();
+    message = "Avatar uploaded.";
+    return res.status(201).json({ message });
+  } catch (error) {
+    message = "General error uploading the avatar.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+module.exports = { create, login, getProfile, getUsers, update, uploadAvatar };
