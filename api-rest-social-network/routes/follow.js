@@ -4,5 +4,6 @@ const AuthMiddleware = require("../middlewares/auth");
 const FollowController = require("../controllers/follow");
 
 router.post("/", AuthMiddleware.auth, FollowController.follow);
+router.delete("/:id", AuthMiddleware.auth, FollowController.unfollow);
 
 module.exports = router;
