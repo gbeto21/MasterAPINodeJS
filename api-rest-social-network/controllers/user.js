@@ -4,7 +4,7 @@ const STRING_CONSTANTS = require("../consts/stringConsts");
 const jwt = require("../services/jwt");
 const mongoosePagination = require("mongoose-pagination");
 
-const create = (req, res) => {
+const create = async (req, res) => {
   let message;
   try {
     const params = req.body;
@@ -21,34 +21,18 @@ const create = (req, res) => {
       return res.status(400).json({ message });
     }
 
-    const { email, nick, password } = params;
+    const { password } = params;
+    const existedUser = findUser(params);
+    if (existedUser) {
+      message = "User already exists.";
+      return res.status(401).send({ message });
+    }
 
-    User.find({
-      $or: [{ email: email.toLowerCase() }, { nick: nick.toLowerCase() }],
-    }).exec(async (error, users) => {
-      if (error) {
-        message = "Error validating the user duplicated.";
-        console.error(message), error;
-        return res.status(500).json({ message });
-      }
-      const userAlreadyExists = users && users.length > 0;
-      if (userAlreadyExists) {
-        message = "User already exists.";
-        return res.status(401).send({ message });
-      }
-
-      const passwordHashed = await bcrypt.hash(password, 10);
-      const userToSave = new User({ ...params, password: passwordHashed });
-      userToSave.save((error, userSaved) => {
-        if (error) {
-          message = "Error saving the user.";
-          console.error(message, error);
-          return res.status(500).send({ message });
-        }
-        message = "User saved.";
-        return res.status(201).json({ message });
-      });
-    });
+    const passwordHashed = await bcrypt.hash(password, 10);
+    const userToSave = new User({ ...params, password: passwordHashed });
+    await userToSave.save();
+    message = "User saved.";
+    return res.status(201).json({ message });
   } catch (error) {
     message = "Error creating the user. ";
     console.error(message, error);
@@ -146,4 +130,43 @@ const getUsers = async (req, res) => {
   }
 };
 
-module.exports = { create, login, getProfile, getUsers };
+const update = async (req, res) => {
+  let message;
+  try {
+    let user = req.user;
+    let newUserData = req.body;
+    delete user.iat;
+    delete user.exports;
+    delete user.role;
+    delete user.image;
+
+    const userDataBase = await findUser(newUserData);
+    console.dir(userDataBase);
+    if (userDataBase) {
+      message = "User already exists.";
+      return res.status(401).send({ message });
+    }
+
+    const { password } = newUserData;
+    if (password) {
+      password = await bcrypt.hash(password, 10);
+    }
+
+    await User.findOneAndUpdate(user.id, newUserData, { new: true }).exec();
+    message = "User updated.";
+    return res.status(201).json({ message });
+  } catch (error) {
+    message = "General error updating the user.";
+    console.error(message, error);
+    return res.status(500).send({ message });
+  }
+};
+
+const findUser = async ({ email, nick }) => {
+  const userFinded = await User.findOne({
+    $or: [{ email: email.toLowerCase() }, { nick: nick.toLowerCase() }],
+  }).exec();
+  return userFinded;
+};
+
+module.exports = { create, login, getProfile, getUsers, update };
